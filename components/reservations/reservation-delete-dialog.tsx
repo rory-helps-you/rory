@@ -12,8 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { deleteReservation } from "@/lib/actions/reservation";
 
 export function ReservationDeleteDialog({
@@ -32,9 +31,9 @@ export function ReservationDeleteDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        render={<Button variant="ghost" size="icon-xs" />}
+        render={<DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()} />}
       >
-        <Trash2Icon className="size-3.5 text-muted-foreground" />
+        削除
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

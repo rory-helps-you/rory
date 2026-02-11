@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,26 +25,33 @@ const initialState: ActionState = { success: false };
 
 export function ReservationForm({
   reservation,
+  onSuccess,
 }: {
   reservation?: ReservationWithCustomer;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const action = reservation ? updateReservation : createReservation;
   const [state, formAction, isPending] = useActionState(action, initialState);
 
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const handledRef = useRef(false);
+
   useEffect(() => {
-    if (state.success) {
-      router.push("/reservations");
+    if (state.success && !handledRef.current) {
+      handledRef.current = true;
+      onSuccessRef.current?.();
+      router.refresh();
     }
   }, [state.success, router]);
 
-  // Format datetime for input default value
   const defaultDateTime = reservation
     ? new Date(reservation.dateTime).toISOString().slice(0, 16)
     : "";
 
   return (
-    <form action={formAction} className="grid gap-4 max-w-lg">
+    <form action={formAction} className="flex flex-col gap-4">
       {reservation && <input type="hidden" name="id" value={reservation.id} />}
 
       {state.error && (
@@ -53,7 +60,7 @@ export function ReservationForm({
         </div>
       )}
 
-      <div className="grid gap-2">
+      <div className="flex flex-col gap-3">
         <Label htmlFor="customerName">顧客名</Label>
         <Input
           id="customerName"
@@ -69,7 +76,7 @@ export function ReservationForm({
         )}
       </div>
 
-      <div className="grid gap-2">
+      <div className="flex flex-col gap-3">
         <Label htmlFor="customerPhone">電話番号</Label>
         <Input
           id="customerPhone"
@@ -86,44 +93,46 @@ export function ReservationForm({
         )}
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="dateTime">予約日時</Label>
-        <Input
-          id="dateTime"
-          name="dateTime"
-          type="datetime-local"
-          defaultValue={defaultDateTime}
-          required
-        />
-        {state.fieldErrors?.dateTime && (
-          <p className="text-xs text-destructive">
-            {state.fieldErrors.dateTime[0]}
-          </p>
-        )}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="dateTime">予約日時</Label>
+          <Input
+            id="dateTime"
+            name="dateTime"
+            type="datetime-local"
+            defaultValue={defaultDateTime}
+            required
+          />
+          {state.fieldErrors?.dateTime && (
+            <p className="text-xs text-destructive">
+              {state.fieldErrors.dateTime[0]}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="menu">メニュー</Label>
+          <Select name="menu" defaultValue={reservation?.menu ?? ""} required>
+            <SelectTrigger className="w-full" id="menu">
+              <SelectValue placeholder="メニューを選択" />
+            </SelectTrigger>
+            <SelectContent>
+              {SERVICE_MENUS.map((menu) => (
+                <SelectItem key={menu.value} value={menu.value}>
+                  {menu.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {state.fieldErrors?.menu && (
+            <p className="text-xs text-destructive">
+              {state.fieldErrors.menu[0]}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="menu">メニュー</Label>
-        <Select name="menu" defaultValue={reservation?.menu ?? ""} required>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="メニューを選択" />
-          </SelectTrigger>
-          <SelectContent>
-            {SERVICE_MENUS.map((menu) => (
-              <SelectItem key={menu.value} value={menu.value}>
-                {menu.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {state.fieldErrors?.menu && (
-          <p className="text-xs text-destructive">
-            {state.fieldErrors.menu[0]}
-          </p>
-        )}
-      </div>
-
-      <div className="grid gap-2">
+      <div className="flex flex-col gap-3">
         <Label htmlFor="note">メモ</Label>
         <Textarea
           id="note"
@@ -134,22 +143,13 @@ export function ReservationForm({
         />
       </div>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? "保存中..."
-            : reservation
-              ? "更新する"
-              : "予約を作成"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-        >
-          キャンセル
-        </Button>
-      </div>
+      <Button type="submit" disabled={isPending} className="mt-2">
+        {isPending
+          ? "保存中..."
+          : reservation
+            ? "更新する"
+            : "予約を作成"}
+      </Button>
     </form>
   );
 }

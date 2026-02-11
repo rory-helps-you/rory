@@ -1,49 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListIcon, CalendarIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { ReservationTable } from "./reservation-table";
-import { ReservationCalendar } from "./reservation-calendar";
 import { ReservationFilters } from "./reservation-filters";
+import { ReservationDrawer } from "./reservation-drawer";
 import type { ReservationWithCustomer } from "./types";
-
-type ViewMode = "list" | "calendar";
 
 export function ReservationListClient({
   reservations,
 }: {
   reservations: ReservationWithCustomer[];
 }) {
-  const [view, setView] = useState<ViewMode>("list");
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
         <ReservationFilters />
-        <div className="flex items-center gap-1 rounded-lg border p-0.5">
-          <Button
-            variant={view === "list" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setView("list")}
-          >
-            <ListIcon className="size-4" />
-          </Button>
-          <Button
-            variant={view === "calendar" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setView("calendar")}
-          >
-            <CalendarIcon className="size-4" />
-          </Button>
-        </div>
+        <ReservationDrawer
+          trigger={
+            <Button variant="outline" size="sm">
+              <PlusIcon />
+              <span className="hidden lg:inline">新規予約</span>
+            </Button>
+          }
+        />
       </div>
-
-      {view === "list" ? (
+      <div className="px-4 lg:px-6">
         <ReservationTable reservations={reservations} />
-      ) : (
-        <ReservationCalendar reservations={reservations} />
-      )}
+      </div>
     </div>
   );
 }

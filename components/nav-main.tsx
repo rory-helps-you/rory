@@ -4,11 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { CirclePlusIcon } from "lucide-react";
+import { ReservationDrawer } from "@/components/reservations/reservation-drawer";
 
 export function NavMain({
   items,
@@ -23,27 +25,41 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>メニュー</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) => {
-          const isActive =
-            item.url === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.url);
-          return (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                tooltip={item.title}
-                isActive={isActive}
-                render={<Link href={item.url} />}
-              >
-                {item.icon}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarMenu>
+      <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarMenu>
+          <SidebarMenuItem className="flex items-center gap-2">
+            <ReservationDrawer
+              trigger={
+                <SidebarMenuButton
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+                >
+                  <CirclePlusIcon />
+                  <span>新規予約</span>
+                </SidebarMenuButton>
+              }
+            />
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <SidebarMenu>
+          {items.map((item) => {
+            const isActive =
+              item.url === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.url);
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  isActive={isActive}
+                  render={<Link href={item.url} />}
+                >
+                  {item.icon}
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
     </SidebarGroup>
   );
 }

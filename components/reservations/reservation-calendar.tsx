@@ -39,8 +39,10 @@ export function ReservationCalendar({
   const getReservationsForDay = (day: Date) =>
     reservations.filter((r) => isSameDay(new Date(r.dateTime), day));
 
+  const rows = days.length / 7;
+
   return (
-    <div>
+    <div className="flex flex-1 flex-col">
       <div className="mb-4 flex items-center justify-between">
         <Button
           variant="ghost"
@@ -61,7 +63,7 @@ export function ReservationCalendar({
         </Button>
       </div>
 
-      <div className="grid grid-cols-7 gap-px rounded-lg border bg-border overflow-hidden">
+      <div className="grid grid-cols-7 gap-px rounded-lg border bg-border overflow-hidden flex-1" style={{ gridTemplateRows: `auto repeat(${rows}, 1fr)` }}>
         {WEEKDAYS.map((day) => (
           <div
             key={day}
@@ -78,7 +80,7 @@ export function ReservationCalendar({
           return (
             <div
               key={day.toISOString()}
-              className={`bg-background min-h-[80px] p-1 ${
+              className={`bg-background p-1 overflow-hidden ${
                 !inMonth ? "opacity-40" : ""
               }`}
             >
