@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Customer {
+  id              String        @id @default(cuid())
+  name            String
+  phone           String        @unique
+  visitCount      Int           @default(0)
+  cancelCount     Int           @default(0)
+  noShowCount     Int           @default(0)
+  lastVisitAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  reservations    Reservation[]
+
+  @@map("customers")
+}
+
+model Reservation {
+  id              String            @id @default(cuid())
+  customerId      String
+  customer        Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  dateTime        DateTime
+  menu            String
+  note            String?
+  status          ReservationStatus @default(CONFIRMED)
+  riskScore       Int               @default(0)
+  riskLevel       RiskLevel         @default(LOW)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([customerId])
+  @@index([dateTime])
+  @@index([status])
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}

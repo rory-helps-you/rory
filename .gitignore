@@ -42,3 +42,5 @@ next-env.d.ts
 
 # prd
 rory-prd-v1.md
+
+/lib/generated/prisma
