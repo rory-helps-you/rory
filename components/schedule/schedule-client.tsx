@@ -8,8 +8,10 @@ import type { ReservationWithCustomer } from "@/components/reservations/types";
 
 export function ScheduleClient({
   reservations,
+  onMutate,
 }: {
   reservations: ReservationWithCustomer[];
+  onMutate?: () => void;
 }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -21,6 +23,7 @@ export function ScheduleClient({
               <span className="hidden lg:inline">新規予約</span>
             </Button>
           }
+          onMutate={onMutate}
         />
       </div>
       <div className="flex flex-1 px-4 lg:px-6 pb-4 lg:pb-6">

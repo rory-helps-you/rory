@@ -63,80 +63,12 @@ const statusIcons: Record<string, React.ReactNode> = {
   NO_SHOW: <CircleAlertIcon className="fill-red-500 dark:fill-red-400" />,
 };
 
-const columns: ColumnDef<ReservationWithCustomer>[] = [
-  {
-    accessorKey: "dateTime",
-    header: "日時",
-    cell: ({ row }) => (
-      <span className="font-medium">
-        {format(new Date(row.original.dateTime), "M/d (E) HH:mm", {
-          locale: ja,
-        })}
-      </span>
-    ),
-  },
-  {
-    id: "customerName",
-    accessorFn: (row) => row.customer.name,
-    header: "顧客名",
-    cell: ({ row }) => row.original.customer.name,
-  },
-  {
-    id: "customerPhone",
-    accessorFn: (row) => row.customer.phone,
-    header: "電話番号",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.original.customer.phone}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "menu",
-    header: "メニュー",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.menu}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "riskLevel",
-    header: "リスク",
-    cell: ({ row }) => {
-      const riskInfo = RISK_LEVELS[row.original.riskLevel];
-      return (
-        <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${riskInfo.className}`}
-        >
-          {riskInfo.label}
-        </span>
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "ステータス",
-    cell: ({ row }) => {
-      const statusInfo = RESERVATION_STATUSES[row.original.status];
-      return (
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {statusIcons[row.original.status]}
-          {statusInfo.label}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <RowActions reservation={row.original} />,
-  },
-];
-
 function RowActions({
   reservation,
+  onMutate,
 }: {
   reservation: ReservationWithCustomer;
+  onMutate?: () => void;
 }) {
   const [editOpen, setEditOpen] = React.useState(false);
 
@@ -145,6 +77,7 @@ function RowActions({
       <ReservationStatusMenu
         reservationId={reservation.id}
         currentStatus={reservation.status}
+        onMutate={onMutate}
       />
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -164,23 +97,104 @@ function RowActions({
             編集
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <ReservationDeleteDialog reservationId={reservation.id} />
+          <ReservationDeleteDialog
+            reservationId={reservation.id}
+            onMutate={onMutate}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
       <ReservationDrawer
         reservation={reservation}
         open={editOpen}
         onOpenChange={setEditOpen}
+        onMutate={onMutate}
       />
     </div>
   );
 }
 
+function createColumns(onMutate?: () => void): ColumnDef<ReservationWithCustomer>[] {
+  return [
+    {
+      accessorKey: "dateTime",
+      header: "日時",
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {format(new Date(row.original.dateTime), "M/d (E) HH:mm", {
+            locale: ja,
+          })}
+        </span>
+      ),
+    },
+    {
+      id: "customerName",
+      accessorFn: (row) => row.customer.name,
+      header: "顧客名",
+      cell: ({ row }) => row.original.customer.name,
+    },
+    {
+      id: "customerPhone",
+      accessorFn: (row) => row.customer.phone,
+      header: "電話番号",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.customer.phone}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "menu",
+      header: "メニュー",
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-muted-foreground px-1.5">
+          {row.original.menu}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "riskLevel",
+      header: "リスク",
+      cell: ({ row }) => {
+        const riskInfo = RISK_LEVELS[row.original.riskLevel];
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${riskInfo.className}`}
+          >
+            {riskInfo.label}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "ステータス",
+      cell: ({ row }) => {
+        const statusInfo = RESERVATION_STATUSES[row.original.status];
+        return (
+          <Badge variant="outline" className="text-muted-foreground px-1.5">
+            {statusIcons[row.original.status]}
+            {statusInfo.label}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <RowActions reservation={row.original} onMutate={onMutate} />
+      ),
+    },
+  ];
+}
+
 export function ReservationTable({
   reservations,
+  onMutate,
 }: {
   reservations: ReservationWithCustomer[];
+  onMutate?: () => void;
 }) {
+  const columns = React.useMemo(() => createColumns(onMutate), [onMutate]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,

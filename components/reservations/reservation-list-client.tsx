@@ -9,8 +9,10 @@ import type { ReservationWithCustomer } from "./types";
 
 export function ReservationListClient({
   reservations,
+  onMutate,
 }: {
   reservations: ReservationWithCustomer[];
+  onMutate?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -23,10 +25,11 @@ export function ReservationListClient({
               <span className="hidden lg:inline">新規予約</span>
             </Button>
           }
+          onMutate={onMutate}
         />
       </div>
       <div className="px-4 lg:px-6">
-        <ReservationTable reservations={reservations} />
+        <ReservationTable reservations={reservations} onMutate={onMutate} />
       </div>
     </div>
   );

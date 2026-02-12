@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,19 +13,30 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { deleteReservation } from "@/lib/actions/reservation";
 
 export function ReservationDeleteDialog({
   reservationId,
+  onMutate,
 }: {
   reservationId: string;
+  onMutate?: () => void;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
-  const handleDelete = () => {
-    startTransition(async () => {
-      await deleteReservation(reservationId);
-    });
+  const handleDelete = async () => {
+    setIsPending(true);
+    try {
+      const res = await fetch(`/api/reservations/${reservationId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        onMutate?.();
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

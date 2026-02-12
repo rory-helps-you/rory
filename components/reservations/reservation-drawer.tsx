@@ -21,20 +21,34 @@ export function ReservationDrawer({
   trigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  onMutate,
 }: {
   reservation?: ReservationWithCustomer;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onMutate?: () => void;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = controlledOnOpenChange ?? setUncontrolledOpen;
   const isMobile = useIsMobile();
   const isEdit = !!reservation;
+  const formKeyRef = React.useRef(0);
+  if (open) {
+    // Track current open session so form remounts each time drawer opens
+    formKeyRef.current;
+  }
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (next) formKeyRef.current += 1;
+      setOpen(next);
+    },
+    [setOpen]
+  );
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       {trigger && <SheetTrigger render={<span />}>{trigger}</SheetTrigger>}
       <SheetContent side={isMobile ? "bottom" : "right"}>
         <SheetHeader>
@@ -47,9 +61,10 @@ export function ReservationDrawer({
         </SheetHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4">
           <ReservationForm
-            key={reservation?.id ?? "new"}
+            key={reservation?.id ?? `new-${formKeyRef.current}`}
             reservation={reservation}
-            onSuccess={() => setOpen(false)}
+            onSuccess={() => handleOpenChange(false)}
+            onMutate={onMutate}
           />
         </div>
         <SheetFooter>

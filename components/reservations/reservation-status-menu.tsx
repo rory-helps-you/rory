@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,24 +9,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { RESERVATION_STATUSES } from "@/lib/constants";
-import { updateReservationStatus } from "@/lib/actions/reservation";
 import type { ReservationStatus } from "@/lib/generated/prisma/client";
 
 export function ReservationStatusMenu({
   reservationId,
   currentStatus,
+  onMutate,
 }: {
   reservationId: string;
   currentStatus: ReservationStatus;
+  onMutate?: () => void;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const statusInfo = RESERVATION_STATUSES[currentStatus];
 
-  const handleStatusChange = (newStatus: ReservationStatus) => {
+  const handleStatusChange = async (newStatus: ReservationStatus) => {
     if (newStatus === currentStatus) return;
-    startTransition(async () => {
-      await updateReservationStatus(reservationId, newStatus);
-    });
+    setIsPending(true);
+    try {
+      const res = await fetch(`/api/reservations/${reservationId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        onMutate?.();
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

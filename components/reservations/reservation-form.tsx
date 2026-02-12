@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,46 +13,79 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SERVICE_MENUS } from "@/lib/constants";
-import {
-  createReservation,
-  updateReservation,
-  type ActionState,
-} from "@/lib/actions/reservation";
 import type { ReservationWithCustomer } from "./types";
 
-const initialState: ActionState = { success: false };
+type ActionState = {
+  success: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+};
 
 export function ReservationForm({
   reservation,
   onSuccess,
+  onMutate,
 }: {
   reservation?: ReservationWithCustomer;
   onSuccess?: () => void;
+  onMutate?: () => void;
 }) {
-  const router = useRouter();
-  const action = reservation ? updateReservation : createReservation;
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, setState] = useState<ActionState>({ success: false });
+  const [isPending, setIsPending] = useState(false);
 
-  const onSuccessRef = useRef(onSuccess);
-  onSuccessRef.current = onSuccess;
-  const handledRef = useRef(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    setState({ success: false });
 
-  useEffect(() => {
-    if (state.success && !handledRef.current) {
-      handledRef.current = true;
-      onSuccessRef.current?.();
-      router.refresh();
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      customerName: formData.get("customerName") as string,
+      customerPhone: formData.get("customerPhone") as string,
+      dateTime: formData.get("dateTime") as string,
+      menu: formData.get("menu") as string,
+      note: formData.get("note") as string,
+    };
+
+    try {
+      const url = reservation
+        ? `/api/reservations/${reservation.id}`
+        : "/api/reservations";
+      const method = reservation ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setState({
+          success: false,
+          error: data.error,
+          fieldErrors: data.fieldErrors,
+        });
+        return;
+      }
+
+      setState({ success: true });
+      onMutate?.();
+      onSuccess?.();
+    } catch {
+      setState({ success: false, error: "予約の保存に失敗しました" });
+    } finally {
+      setIsPending(false);
     }
-  }, [state.success, router]);
+  };
 
   const defaultDateTime = reservation
     ? new Date(reservation.dateTime).toISOString().slice(0, 16)
     : "";
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      {reservation && <input type="hidden" name="id" value={reservation.id} />}
-
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {state.error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           {state.error}
