@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   startOfMonth,
   endOfMonth,
@@ -11,25 +10,19 @@ import {
   isSameMonth,
   isSameDay,
   isToday,
-  addMonths,
-  subMonths,
 } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { RESERVATION_STATUSES, RISK_LEVELS } from "@/lib/constants";
+import { RISK_LEVELS } from "@/lib/constants";
 import type { ReservationWithCustomer } from "./types";
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function ReservationCalendar({
   reservations,
+  currentMonth,
 }: {
   reservations: ReservationWithCustomer[];
+  currentMonth: Date;
 }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
@@ -43,26 +36,6 @@ export function ReservationCalendar({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-        >
-          <ChevronLeftIcon />
-        </Button>
-        <h3 className="text-sm font-medium">
-          {format(currentMonth, "yyyy年M月", { locale: ja })}
-        </h3>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-        >
-          <ChevronRightIcon />
-        </Button>
-      </div>
-
       <div className="grid grid-cols-7 gap-px rounded-lg border bg-border overflow-hidden flex-1" style={{ gridTemplateRows: `auto repeat(${rows}, 1fr)` }}>
         {WEEKDAYS.map((day) => (
           <div
