@@ -22,7 +22,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -45,29 +44,16 @@ import {
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  CircleCheckIcon,
-  LoaderIcon,
-  CircleXIcon,
-  CircleAlertIcon,
 } from "lucide-react";
-import { RESERVATION_STATUSES, RISK_LEVELS } from "@/lib/constants";
-import { ReservationStatusMenu } from "./reservation-status-menu";
-import { ReservationDeleteDialog } from "./reservation-delete-dialog";
-import { ReservationDrawer } from "./reservation-drawer";
-import type { ReservationWithCustomer } from "./types";
-
-const statusIcons: Record<string, React.ReactNode> = {
-  CONFIRMED: <LoaderIcon />,
-  COMPLETED: <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />,
-  CANCELLED: <CircleXIcon className="fill-muted-foreground/40" />,
-  NO_SHOW: <CircleAlertIcon className="fill-red-500 dark:fill-red-400" />,
-};
+import { CustomerDrawer } from "./customer-drawer";
+import { CustomerDeleteDialog } from "./customer-delete-dialog";
+import type { CustomerWithCounts } from "./types";
 
 function RowActions({
-  reservation,
+  customer,
   onMutate,
 }: {
-  reservation: ReservationWithCustomer;
+  customer: CustomerWithCounts;
   onMutate?: () => void;
 }) {
   const [editOpen, setEditOpen] = React.useState(false);
@@ -75,11 +61,6 @@ function RowActions({
 
   return (
     <div className="flex items-center justify-end">
-      <ReservationStatusMenu
-        reservationId={reservation.id}
-        currentStatus={reservation.status}
-        onMutate={onMutate}
-      />
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -106,14 +87,15 @@ function RowActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ReservationDrawer
-        reservation={reservation}
+      <CustomerDrawer
+        customer={customer}
         open={editOpen}
         onOpenChange={setEditOpen}
         onMutate={onMutate}
       />
-      <ReservationDeleteDialog
-        reservationId={reservation.id}
+      <CustomerDeleteDialog
+        customerId={customer.id}
+        customerName={customer.name}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onMutate={onMutate}
@@ -122,85 +104,64 @@ function RowActions({
   );
 }
 
-function createColumns(onMutate?: () => void): ColumnDef<ReservationWithCustomer>[] {
+function createColumns(onMutate?: () => void): ColumnDef<CustomerWithCounts>[] {
   return [
     {
-      accessorKey: "dateTime",
-      header: "日時",
+      accessorKey: "name",
+      header: "名前",
       cell: ({ row }) => (
-        <span className="font-medium">
-          {format(new Date(row.original.dateTime), "M/d (E) HH:mm", {
-            locale: ja,
-          })}
-        </span>
+        <span className="font-medium">{row.original.name}</span>
       ),
     },
     {
-      id: "customerName",
-      accessorFn: (row) => row.customer.name,
-      header: "顧客名",
-      cell: ({ row }) => row.original.customer.name,
-    },
-    {
-      id: "customerPhone",
-      accessorFn: (row) => row.customer.phone,
+      accessorKey: "phone",
       header: "電話番号",
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.customer.phone}
-        </span>
+        <span className="text-muted-foreground">{row.original.phone}</span>
       ),
     },
     {
-      accessorKey: "menu",
-      header: "メニュー",
-      cell: ({ row }) => (
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.menu}
-        </Badge>
-      ),
+      accessorKey: "visitCount",
+      header: "来店回数",
+      cell: ({ row }) => row.original.visitCount,
     },
     {
-      accessorKey: "riskLevel",
-      header: "リスク",
+      accessorKey: "cancelCount",
+      header: "キャンセル",
+      cell: ({ row }) => row.original.cancelCount,
+    },
+    {
+      accessorKey: "noShowCount",
+      header: "無断キャンセル",
+      cell: ({ row }) => row.original.noShowCount,
+    },
+    {
+      accessorKey: "lastVisitAt",
+      header: "最終来店日",
       cell: ({ row }) => {
-        const riskInfo = RISK_LEVELS[row.original.riskLevel];
+        const date = row.original.lastVisitAt;
+        if (!date) return <span className="text-muted-foreground">-</span>;
         return (
-          <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${riskInfo.className}`}
-          >
-            {riskInfo.label}
+          <span className="text-muted-foreground">
+            {format(new Date(date), "yyyy/M/d", { locale: ja })}
           </span>
-        );
-      },
-    },
-    {
-      accessorKey: "status",
-      header: "ステータス",
-      cell: ({ row }) => {
-        const statusInfo = RESERVATION_STATUSES[row.original.status];
-        return (
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {statusIcons[row.original.status]}
-            {statusInfo.label}
-          </Badge>
         );
       },
     },
     {
       id: "actions",
       cell: ({ row }) => (
-        <RowActions reservation={row.original} onMutate={onMutate} />
+        <RowActions customer={row.original} onMutate={onMutate} />
       ),
     },
   ];
 }
 
-export function ReservationTable({
-  reservations,
+export function CustomerTable({
+  customers,
   onMutate,
 }: {
-  reservations: ReservationWithCustomer[];
+  customers: CustomerWithCounts[];
   onMutate?: () => void;
 }) {
   const columns = React.useMemo(() => createColumns(onMutate), [onMutate]);
@@ -211,7 +172,7 @@ export function ReservationTable({
   });
 
   const table = useReactTable({
-    data: reservations,
+    data: customers,
     columns,
     getRowId: (row) => row.id,
     state: { sorting, pagination },
@@ -263,7 +224,7 @@ export function ReservationTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  予約がありません
+                  顧客がいません
                 </TableCell>
               </TableRow>
             )}
@@ -272,7 +233,7 @@ export function ReservationTable({
       </div>
       <div className="flex items-center justify-between px-4">
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-          {table.getFilteredRowModel().rows.length} 件の予約
+          {table.getFilteredRowModel().rows.length} 件の顧客
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">

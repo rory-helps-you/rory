@@ -13,17 +13,17 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ReservationForm } from "./reservation-form";
-import type { ReservationWithCustomer } from "./types";
+import { CustomerForm } from "./customer-form";
+import type { CustomerWithCounts } from "./types";
 
-export function ReservationDrawer({
-  reservation,
+export function CustomerDrawer({
+  customer,
   trigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   onMutate,
 }: {
-  reservation?: ReservationWithCustomer;
+  customer?: CustomerWithCounts;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -33,10 +33,9 @@ export function ReservationDrawer({
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = controlledOnOpenChange ?? setUncontrolledOpen;
   const isMobile = useIsMobile();
-  const isEdit = !!reservation;
+  const isEdit = !!customer;
   const formKeyRef = React.useRef(0);
   if (open) {
-    // Track current open session so form remounts each time drawer opens
     formKeyRef.current;
   }
   const handleOpenChange = React.useCallback(
@@ -52,17 +51,17 @@ export function ReservationDrawer({
       {trigger && <SheetTrigger nativeButton={false} render={<span />}>{trigger}</SheetTrigger>}
       <SheetContent side={isMobile ? "bottom" : "right"}>
         <SheetHeader>
-          <SheetTitle>{isEdit ? "予約編集" : "新規予約"}</SheetTitle>
+          <SheetTitle>{isEdit ? "顧客編集" : "新規顧客"}</SheetTitle>
           <SheetDescription>
             {isEdit
-              ? "予約内容を変更して更新してください"
-              : "予約情報を入力してください"}
+              ? "顧客情報を変更して更新してください"
+              : "顧客情報を入力してください"}
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4">
-          <ReservationForm
-            key={reservation?.id ?? `new-${formKeyRef.current}`}
-            reservation={reservation}
+          <CustomerForm
+            key={customer?.id ?? `new-${formKeyRef.current}`}
+            customer={customer}
             onSuccess={() => handleOpenChange(false)}
             onMutate={onMutate}
           />

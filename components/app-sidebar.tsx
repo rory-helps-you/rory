@@ -53,12 +53,15 @@ const data = {
       icon: <UsersIcon />,
     },
   ],
+  navSettings: {
+    title: "設定",
+    icon: <Settings2Icon />,
+    items: [
+      { title: "担当者", url: "/settings/staff" },
+      { title: "メニュー", url: "/settings/menu" },
+    ],
+  },
   navSecondary: [
-    {
-      title: "設定",
-      url: "/settings",
-      icon: <Settings2Icon />,
-    },
     {
       title: "ヘルプ",
       url: "#",
@@ -79,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher shops={data.shops} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain} collapsibles={[data.navSettings]} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

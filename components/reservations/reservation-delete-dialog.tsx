@@ -10,15 +10,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 export function ReservationDeleteDialog({
   reservationId,
+  open,
+  onOpenChange,
   onMutate,
 }: {
   reservationId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onMutate?: () => void;
 }) {
   const [isPending, setIsPending] = useState(false);
@@ -30,6 +32,7 @@ export function ReservationDeleteDialog({
         method: "DELETE",
       });
       if (res.ok) {
+        onOpenChange(false);
         onMutate?.();
       }
     } catch {
@@ -40,12 +43,7 @@ export function ReservationDeleteDialog({
   };
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={<DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()} />}
-      >
-        削除
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>予約を削除しますか？</AlertDialogTitle>

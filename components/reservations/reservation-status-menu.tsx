@@ -45,6 +45,7 @@ export function ReservationStatusMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        nativeButton={false}
         render={
           <Badge
             variant={statusInfo.variant}
