@@ -26,10 +26,22 @@ model Customer {
   @@map("customers")
 }
 
+model Staff {
+  id           String        @id @default(cuid())
+  name         String
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("staff")
+}
+
 model Reservation {
   id              String            @id @default(cuid())
   customerId      String
   customer        Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  staffId         String?
+  staff           Staff?            @relation(fields: [staffId], references: [id], onDelete: SetNull)
   dateTime        DateTime
   menu            String
   note            String?
@@ -40,6 +52,7 @@ model Reservation {
   updatedAt       DateTime          @updatedAt
 
   @@index([customerId])
+  @@index([staffId])
   @@index([dateTime])
   @@index([status])
   @@map("reservations")
