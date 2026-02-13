@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
+import { NavSettings } from "@/components/nav-settings";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -20,11 +21,13 @@ import {
   Settings2Icon,
   CircleHelpIcon,
   SearchIcon,
+  UserCogIcon,
+  UtensilsCrossedIcon,
 } from "lucide-react";
 
 const data = {
   shops: [
-    { name: "Rory 渋谷店", plan: "スタンダード" },
+    // { name: "Rory 渋谷店", plan: "スタンダード" },
   ],
   user: {
     name: "オーナー",
@@ -32,11 +35,11 @@ const data = {
     avatar: "",
   },
   navMain: [
-    {
-      title: "ダッシュボード",
-      url: "/",
-      icon: <LayoutDashboardIcon />,
-    },
+    // {
+    //   title: "ダッシュボード",
+    //   url: "/",
+    //   icon: <LayoutDashboardIcon />,
+    // },
     {
       title: "スケジュール",
       url: "/schedule",
@@ -53,36 +56,33 @@ const data = {
       icon: <UsersIcon />,
     },
   ],
-  navSettings: {
-    title: "設定",
-    icon: <Settings2Icon />,
-    items: [
-      { title: "担当者", url: "/settings/staff" },
-      { title: "メニュー", url: "/settings/menu" },
-    ],
-  },
+  navSettings: [
+    { title: "担当者", url: "/settings/staff", icon: <UserCogIcon /> },
+    { title: "メニュー", url: "/settings/menu", icon: <UtensilsCrossedIcon /> },
+  ],
   navSecondary: [
     {
       title: "ヘルプ",
       url: "#",
       icon: <CircleHelpIcon />,
     },
-    {
-      title: "検索",
-      url: "#",
-      icon: <SearchIcon />,
-    },
+    // {
+    //   title: "検索",
+    //   url: "#",
+    //   icon: <SearchIcon />,
+    // },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+      {/* <SidebarHeader>
         <TeamSwitcher shops={data.shops} />
-      </SidebarHeader>
+      </SidebarHeader> */}
       <SidebarContent>
-        <NavMain items={data.navMain} collapsibles={[data.navSettings]} />
+        <NavMain items={data.navMain} />
+        <NavSettings items={data.navSettings} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

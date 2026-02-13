@@ -30,10 +30,25 @@ model Staff {
   id           String        @id @default(cuid())
   name         String
   reservations Reservation[]
+  slots        StaffSlot[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   @@map("staff")
+}
+
+model StaffSlot {
+  id        String   @id @default(cuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([staffId, startAt])
+  @@index([staffId])
+  @@index([startAt])
+  @@map("staff_slots")
 }
 
 model Reservation {
