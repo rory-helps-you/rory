@@ -1,6 +1,12 @@
 import { z } from "zod/v4";
 
 export const reservationSchema = z.object({
+  staffId: z
+    .string()
+    .min(1, "担当者を選択してください"),
+  slotStartTimes: z
+    .array(z.string())
+    .min(1, "スロットを選択してください"),
   customerName: z
     .string()
     .min(1, "顧客名を入力してください"),
@@ -8,9 +14,6 @@ export const reservationSchema = z.object({
     .string()
     .min(1, "電話番号を入力してください")
     .regex(/^[0-9\-]+$/, "正しい電話番号を入力してください"),
-  dateTime: z
-    .string()
-    .min(1, "予約日時を入力してください"),
   menu: z
     .string()
     .min(1, "メニューを選択してください"),

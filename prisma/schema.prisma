@@ -58,6 +58,7 @@ model Reservation {
   staffId         String?
   staff           Staff?            @relation(fields: [staffId], references: [id], onDelete: SetNull)
   dateTime        DateTime
+  duration        Int               @default(30)
   menu            String
   note            String?
   status          ReservationStatus @default(CONFIRMED)

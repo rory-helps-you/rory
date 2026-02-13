@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   const reservations = await prisma.reservation.findMany({
     where,
-    include: { customer: true },
+    include: { customer: true, staff: true },
     orderBy: { dateTime: "asc" },
   });
 
@@ -50,6 +50,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const sortedSlots = [...parsed.data.slotStartTimes].sort();
+    const dateTime = new Date(sortedSlots[0]);
+    const duration = sortedSlots.length * 30;
+
     const customer = await prisma.customer.upsert({
       where: { phone: parsed.data.customerPhone },
       update: { name: parsed.data.customerName },
@@ -69,7 +73,9 @@ export async function POST(request: NextRequest) {
     const reservation = await prisma.reservation.create({
       data: {
         customerId: customer.id,
-        dateTime: new Date(parsed.data.dateTime),
+        staffId: parsed.data.staffId,
+        dateTime,
+        duration,
         menu: parsed.data.menu,
         note: parsed.data.note,
         riskScore: risk.score,

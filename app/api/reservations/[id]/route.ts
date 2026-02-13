@@ -71,10 +71,16 @@ export async function PUT(request: NextRequest, { params }: Params) {
       lastVisitAt: customer!.lastVisitAt,
     });
 
+    const sortedSlots = [...parsed.data.slotStartTimes].sort();
+    const dateTime = new Date(sortedSlots[0]);
+    const duration = sortedSlots.length * 30;
+
     const updated = await prisma.reservation.update({
       where: { id },
       data: {
-        dateTime: new Date(parsed.data.dateTime),
+        staffId: parsed.data.staffId,
+        dateTime,
+        duration,
         menu: parsed.data.menu,
         note: parsed.data.note,
         riskScore: risk.score,
